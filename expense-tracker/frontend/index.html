@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Expense Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">
+                <i class="fas fa-wallet"></i>
+                <h1>Smart Expense</h1>
+            </div>
+            <div class="nav-actions">
+                <button id="theme-toggle" class="icon-btn" aria-label="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff" alt="User">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Dashboard Summary -->
+        <section class="summary-grid">
+            <div class="summary-card total-card">
+                <div class="card-icon"><i class="fas fa-coins"></i></div>
+                <div class="card-info">
+                    <h3>Total Spent</h3>
+                    <p id="total-spending" class="amount">$0.00</p>
+                </div>
+            </div>
+            <div class="summary-card month-card">
+                <div class="card-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="card-info">
+                    <h3>This Month</h3>
+                    <p id="monthly-spending" class="amount">$0.00</p>
+                </div>
+            </div>
+            <div class="summary-card top-card">
+                <div class="card-icon"><i class="fas fa-chart-pie"></i></div>
+                <div class="card-info">
+                    <h3>Top Category</h3>
+                    <p id="top-category" class="amount category-text">-</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Dashboard -->
+        <section class="analytics-section">
+            <h2 class="section-title"><i class="fas fa-chart-line"></i> Analytics Dashboard</h2>
+            <div class="charts-grid">
+                <div class="card chart-card">
+                    <h3>Category Spending</h3>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+                <div class="card chart-card">
+                    <h3>Monthly Trend</h3>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="main-content">
+            <!-- Left Column: Form -->
+            <section class="form-section">
+                <div class="card form-card">
+                    <h2><i class="fas fa-plus-circle"></i> Add New Expense</h2>
+                    <form id="expense-form">
+                        <div class="form-group">
+                            <label for="amount">Amount ($)</label>
+                            <input type="number" id="amount" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" required>
+                                <option value="" disabled selected>Select category</option>
+                                <option value="Food & Dining">🍔 Food & Dining</option>
+                                <option value="Transportation">🚗 Transportation</option>
+                                <option value="Shopping">🛍️ Shopping</option>
+                                <option value="Entertainment">🎬 Entertainment</option>
+                                <option value="Bills & Utilities">⚡ Bills & Utilities</option>
+                                <option value="Health & Fitness">⚕️ Health & Fitness</option>
+                                <option value="Other">📌 Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <input type="text" id="description" placeholder="What did you buy?" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input type="date" id="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentMethod">Payment Method</label>
+                            <select id="paymentMethod" required>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Debit Card">Debit Card</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <button type="submit" id="submit-btn" class="primary-btn">
+                            <span>Add Expense</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Right Column: List & Filters -->
+            <section class="list-section">
+                <div class="filters-card">
+                    <div class="filter-group">
+                        <label for="filter-category"><i class="fas fa-filter"></i> Filter Category</label>
+                        <select id="filter-category">
+                            <option value="All">All Categories</option>
+                            <option value="Food & Dining">Food & Dining</option>
+                            <option value="Transportation">Transportation</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Bills & Utilities">Bills & Utilities</option>
+                            <option value="Health & Fitness">Health & Fitness</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="expenses-container">
+                    <div class="list-header">
+                        <h2>Recent Transactions</h2>
+                        <span id="transaction-count">0 items</span>
+                    </div>
+
+                    <!-- Loading Spinner -->
+                    <div id="loading-spinner" class="spinner-container hidden">
+                        <div class="spinner"></div>
+                        <p>Loading expenses...</p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="empty-state" class="empty-state hidden">
+                        <img src="https://illustrations.popsy.co/amber/surreal-hourglass.svg" alt="No expenses" class="empty-img">
+                        <h3>No expenses found</h3>
+                        <p>Add your first expense using the form to get started!</p>
+                    </div>
+
+                    <!-- Expense List -->
+                    <div id="expense-list" class="expense-list">
+                        <!-- Expense items will be injected here via JS -->
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
